@@ -1,3 +1,4 @@
+import base64
 from fastapi import FastAPI, HTTPException, Form, File, UploadFile
 import asyncpg
 from uuid import uuid4
@@ -32,14 +33,18 @@ async def register_user(
                     "SELECT COUNT(*) FROM users WHERE email=$1", email
                 )
                 if email_exists:
-                    raise HTTPException(status_code=400, detail="Email already registered.")
+                    raise HTTPException(
+                        status_code=400, detail="Email already registered."
+                    )
 
                 # Check if the phone already exists
                 phone_exists = await connection.fetchval(
                     "SELECT COUNT(*) FROM users WHERE phone=$1", phone
                 )
                 if phone_exists:
-                    raise HTTPException(status_code=400, detail="Phone already registered.")
+                    raise HTTPException(
+                        status_code=400, detail="Phone already registered."
+                    )
 
                 # Convert profile picture to bytes
                 profile_picture_data = await profile_picture.read()
@@ -60,3 +65,41 @@ async def register_user(
 
     except Exception:
         return {"message": "There was an error during user registration."}
+
+
+@app.get("/users/{user_id}")
+async def get_user_details(user_id: str):
+    # Fetch user details from the "Users" table
+    user_query = "SELECT * FROM users WHERE user_id=$1"
+    profile_query = "SELECT * FROM profile WHERE user_id=$1"
+    
+    postgres_pool = await get_postgres_pool()
+    
+    try:
+        async with postgres_pool.acquire() as connection:
+            user_row = await connection.fetchrow(user_query, user_id)
+            if not user_row:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            profile_row = await connection.fetchrow(profile_query, user_id)
+            if not profile_row:
+                raise HTTPException(status_code=404, detail="Profile not found")
+
+            user_details = {
+                "user_id": user_row["user_id"],
+                "full_name": user_row["full_name"],
+                "email": user_row["email"],
+                "phone": user_row["phone"],
+            }
+
+            # Convert the binary profile_picture to base64
+            if "profile_picture" in profile_row:
+                profile_picture_binary = profile_row["profile_picture"]
+                profile_picture_base64 = base64.b64encode(profile_picture_binary).decode("utf-8")
+                user_details["profile_picture"] = profile_picture_base64
+
+        return {"message": "User details found.", "data": user_details}
+    
+    except Exception:
+        return {"message": "User not found."}
+    
