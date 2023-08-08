@@ -2,12 +2,9 @@ import base64
 from fastapi import FastAPI, HTTPException, Form, File, UploadFile
 import asyncpg
 from uuid import uuid4
+from settings import POSTGRES_DSN
 
 app = FastAPI()
-
-# PostgreSQL Configuration
-POSTGRES_DSN = "postgresql://postgres:12345@localhost/postgres"
-
 
 async def get_postgres_pool():
     return await asyncpg.create_pool(POSTGRES_DSN)
