@@ -25,7 +25,7 @@ This project is designed to demonstrate a web application that allows users to r
    ```
 3. Install dependencies:
     ```bash
-   pip install -r requirements.txt
+    pip install -r requirements.txt
    ```
 4. Set up your PostgreSQL database and update the configuration in app/settings.py.
 
@@ -35,7 +35,7 @@ Make sure to run the PostgreSQL before running the FastAPI application.
 To run the FastAPI application, use the following command:
 
 ```bash
-    uvicorn main:app --reload
+uvicorn main:app --reload
 ```
 Now, you can access the FastAPI endpoints for user registration and user retrieval.
 ## API Endpoints

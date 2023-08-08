@@ -75,31 +75,29 @@ async def get_user_details(user_id: str):
     
     postgres_pool = await get_postgres_pool()
     
-    try:
-        async with postgres_pool.acquire() as connection:
-            user_row = await connection.fetchrow(user_query, user_id)
-            if not user_row:
-                raise HTTPException(status_code=404, detail="User not found")
-
-            profile_row = await connection.fetchrow(profile_query, user_id)
-            if not profile_row:
-                raise HTTPException(status_code=404, detail="Profile not found")
-
-            user_details = {
-                "user_id": user_row["user_id"],
-                "full_name": user_row["full_name"],
-                "email": user_row["email"],
-                "phone": user_row["phone"],
-            }
-
-            # Convert the binary profile_picture to base64
-            if "profile_picture" in profile_row:
-                profile_picture_binary = profile_row["profile_picture"]
-                profile_picture_base64 = base64.b64encode(profile_picture_binary).decode("utf-8")
-                user_details["profile_picture"] = profile_picture_base64
-
-        return {"message": "User details found.", "data": user_details}
     
-    except Exception:
-        return {"message": "User not found."}
+    async with postgres_pool.acquire() as connection:
+        user_row = await connection.fetchrow(user_query, user_id)
+        if not user_row:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        profile_row = await connection.fetchrow(profile_query, user_id)
+        if not profile_row:
+            raise HTTPException(status_code=404, detail="Profile not found.")
+
+        user_details = {
+            "user_id": user_row["user_id"],
+            "full_name": user_row["full_name"],
+            "email": user_row["email"],
+            "phone": user_row["phone"],
+        }
+
+        # Convert the binary profile_picture to base64
+        if "profile_picture" in profile_row:
+            profile_picture_binary = profile_row["profile_picture"]
+            profile_picture_base64 = base64.b64encode(profile_picture_binary).decode("utf-8")
+            user_details["profile_picture"] = profile_picture_base64
+
+    return {"message": "User details found.", "data": user_details}
+    
     
