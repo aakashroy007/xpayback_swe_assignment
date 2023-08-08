@@ -20,7 +20,8 @@ This project is designed to demonstrate a web application that allows users to r
    ```
 2. Create a virtual environment (optional but recommended):
     ```bash
-   git clone https://github.com/aakashroy007/xpayback_swe_assignment.git
+    python -m venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 3. Install dependencies:
     ```bash
